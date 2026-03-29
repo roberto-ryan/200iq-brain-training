@@ -1,47 +1,63 @@
-import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Share } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SIZES } from '../constants/theme';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  addToTotalScore, updateStreak, addGameToHistory,
+  incrementTotalGamesPlayed, getTotalGamesPlayed,
+  shouldShowRatingPrompt, markRatingPromptShown,
+} from '../services/storage';
+import { showInterstitial, showRewarded, shouldShowInterstitial, trackGameCompleted } from '../services/ads';
+import usePremium from '../hooks/usePremium';
+import ScoreCard, { captureScoreCard } from '../components/ScoreCard';
+import UpsellBanner from '../components/UpsellBanner';
+import { RATING } from '../constants/config';
 
 export default function ResultsScreen({ route, navigation }) {
-  const { score, correct, wrong, gameTitle } = route.params;
+  const { score, correct, wrong, gameTitle, gameId } = route.params;
   const accuracy = correct + wrong > 0 ? Math.round((correct / (correct + wrong)) * 100) : 0;
+  const { isPremium } = usePremium();
+  const scoreCardRef = useRef(null);
 
-  useEffect(() => {
-    saveScore();
-  }, []);
+  useEffect(() => { saveAndProcess(); }, []);
 
-  const saveScore = async () => {
+  const saveAndProcess = async () => {
     try {
-      const totalScore = await AsyncStorage.getItem('totalScore');
-      const newTotal = (parseInt(totalScore) || 0) + score;
-      await AsyncStorage.setItem('totalScore', newTotal.toString());
+      await addToTotalScore(score);
+      await updateStreak();
+      await addGameToHistory({ score, correct, wrong, accuracy, gameTitle });
+      const totalGames = await incrementTotalGamesPlayed();
+      trackGameCompleted();
 
-      const today = new Date().toDateString();
-      const lastPlay = await AsyncStorage.getItem('lastPlayDate');
-      const streak = await AsyncStorage.getItem('streak');
-      const currentStreak = parseInt(streak) || 0;
-
-      if (lastPlay !== today) {
-        const yesterday = new Date(Date.now() - 86400000).toDateString();
-        const newStreak = lastPlay === yesterday ? currentStreak + 1 : 1;
-        await AsyncStorage.setItem('streak', newStreak.toString());
-        await AsyncStorage.setItem('lastPlayDate', today);
+      if (!isPremium && shouldShowInterstitial()) {
+        await showInterstitial();
       }
 
-      // Save game history
-      const history = JSON.parse(await AsyncStorage.getItem('gameHistory') || '[]');
-      history.unshift({ score, correct, wrong, accuracy, gameTitle, date: new Date().toISOString() });
-      await AsyncStorage.setItem('gameHistory', JSON.stringify(history.slice(0, 50)));
+      if (totalGames >= RATING.MIN_GAMES_BEFORE_PROMPT && await shouldShowRatingPrompt()) {
+        await triggerRatingPrompt();
+      }
+    } catch (e) {}
+  };
+
+  const triggerRatingPrompt = async () => {
+    if (Platform.OS === 'web') return;
+    try {
+      const StoreReview = require('expo-store-review');
+      if (await StoreReview.hasAction()) {
+        await StoreReview.requestReview();
+        await markRatingPromptShown();
+      }
     } catch (e) {}
   };
 
   const shareScore = async () => {
+    if (Platform.OS === 'web') return;
     try {
-      await Share.share({
-        message: `🧠 I scored ${score} points on ${gameTitle} in 200IQ Brain Training with ${accuracy}% accuracy! Can you beat me? Download: https://200iq.app`,
-      });
+      const uri = await captureScoreCard(scoreCardRef);
+      if (uri) {
+        const Sharing = require('expo-sharing');
+        await Sharing.shareAsync(uri);
+      }
     } catch (e) {}
   };
 
@@ -85,9 +101,31 @@ export default function ResultsScreen({ route, navigation }) {
           </View>
         </View>
 
+        <View style={{ position: 'absolute', left: -1000 }}>
+          <ScoreCard
+            ref={scoreCardRef}
+            score={score} correct={correct} wrong={wrong}
+            accuracy={accuracy} gameTitle={gameTitle} streak={0}
+          />
+        </View>
+
         <TouchableOpacity style={styles.shareBtn} onPress={shareScore} activeOpacity={0.7}>
-          <Text style={styles.shareBtnText}>📤 Share Score</Text>
+          <Text style={styles.shareBtnText}>📤 Share Score Card</Text>
         </TouchableOpacity>
+
+        {!isPremium && (
+          <TouchableOpacity
+            style={styles.shareBtn}
+            onPress={async () => { await showRewarded(); }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.shareBtnText}>🎬 Watch Ad for Bonus</Text>
+          </TouchableOpacity>
+        )}
+
+        {!isPremium && score >= 100 && (
+          <UpsellBanner message="Track your improvement trends with Premium" navigation={navigation} />
+        )}
 
         <TouchableOpacity style={styles.playAgainBtn} onPress={() => navigation.replace('Game', route.params)} activeOpacity={0.7}>
           <Text style={styles.playAgainText}>Play Again</Text>
@@ -112,7 +150,7 @@ const styles = StyleSheet.create({
   },
   gradeText: { fontSize: 48, fontWeight: 'bold' },
   gradeLabel: { fontSize: SIZES.sm, color: COLORS.textSecondary },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, marginBottom: 30 },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 16, marginBottom: 24 },
   statItem: {
     backgroundColor: COLORS.card, borderRadius: SIZES.radius, padding: 16, minWidth: 100,
     alignItems: 'center', borderWidth: 1, borderColor: COLORS.cardBorder,
@@ -122,6 +160,7 @@ const styles = StyleSheet.create({
   shareBtn: {
     backgroundColor: COLORS.card, borderRadius: SIZES.radius, paddingVertical: 14,
     paddingHorizontal: 40, borderWidth: 1, borderColor: COLORS.cardBorder, marginBottom: 12,
+    width: '100%', alignItems: 'center',
   },
   shareBtnText: { fontSize: SIZES.md, color: COLORS.text, fontWeight: 'bold' },
   playAgainBtn: {
