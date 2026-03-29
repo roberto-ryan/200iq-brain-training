@@ -18,13 +18,17 @@
       },
       "package": "com.brainiq200.app",
       "versionCode": 1,
-      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE"]
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
     },
     "plugins": [],
     "extra": {
       "eas": {
-        "projectId": ""
+        "projectId": "71a2d0fd-2e18-4c7e-9d6e-f134c5c659a7"
       }
-    }
+    },
+    "owner": "robbiepryan"
   }
 }
