@@ -2,7 +2,7 @@
   "expo": {
     "name": "200IQ Brain Training",
     "slug": "200iq-brain-training",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -17,13 +17,30 @@
         "backgroundColor": "#0a0a2e"
       },
       "package": "com.brainiq200.app",
-      "versionCode": 1,
+      "versionCode": 2,
       "permissions": [
         "INTERNET",
-        "ACCESS_NETWORK_STATE"
-      ]
+        "ACCESS_NETWORK_STATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "SCHEDULE_EXACT_ALARM"
+      ],
+      "googleServicesFile": "./google-services.json"
     },
-    "plugins": [],
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-notifications",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-XXXXX~YYYYY",
+          "iosAppId": "ca-app-pub-XXXXX~YYYYY"
+        }
+      ],
+      "expo-store-review"
+    ],
     "extra": {
       "eas": {
         "projectId": "71a2d0fd-2e18-4c7e-9d6e-f134c5c659a7"
