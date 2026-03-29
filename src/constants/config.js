@@ -15,7 +15,7 @@ export const ADS = {
 };
 
 export const REVENUECAT = {
-  GOOGLE_API_KEY: 'goog_XXXXX',
+  GOOGLE_API_KEY: 'test_DWVUlPNNYXwtnvKcQxLcNdMyejf',
   ENTITLEMENT_ID: 'premium',
   MONTHLY_PRODUCT_ID: 'rc_monthly_499',
   ANNUAL_PRODUCT_ID: 'rc_annual_2999',
