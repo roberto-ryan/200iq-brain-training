@@ -2,16 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SIZES } from '../constants/theme';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getStreak, getTotalScore } from '../services/storage';
+import { getGames, getDailyChallenge } from '../games/registry';
 
 const { width } = Dimensions.get('window');
-
-const GAMES = [
-  { id: 'speed-math', title: 'Speed Math', icon: '⚡', desc: 'Solve arithmetic fast', color: '#6c5ce7', best: 0 },
-  { id: 'pattern-match', title: 'Pattern Match', icon: '🔷', desc: 'Find the pattern', color: '#00cec9', best: 0 },
-  { id: 'memory-grid', title: 'Memory Grid', icon: '🧩', desc: 'Remember positions', color: '#fdcb6e', best: 0 },
-  { id: 'color-match', title: 'Color Match', icon: '🎨', desc: 'Stroop challenge', color: '#ff7675', best: 0 },
-];
 
 export default function HomeScreen({ navigation }) {
   const [streak, setStreak] = useState(0);
@@ -23,10 +17,10 @@ export default function HomeScreen({ navigation }) {
 
   const loadStats = async () => {
     try {
-      const s = await AsyncStorage.getItem('streak');
-      const t = await AsyncStorage.getItem('totalScore');
-      if (s) setStreak(parseInt(s));
-      if (t) setTotalScore(parseInt(t));
+      const s = await getStreak();
+      const t = await getTotalScore();
+      setStreak(s);
+      setTotalScore(t);
     } catch (e) {}
   };
 
@@ -52,7 +46,7 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.sectionTitle}>Choose Your Challenge</Text>
 
         <View style={styles.gamesGrid}>
-          {GAMES.map((game) => (
+          {getGames().map((game) => (
             <TouchableOpacity
               key={game.id}
               style={[styles.gameCard, { borderColor: game.color + '60' }]}
@@ -61,7 +55,7 @@ export default function HomeScreen({ navigation }) {
             >
               <Text style={styles.gameIcon}>{game.icon}</Text>
               <Text style={styles.gameTitle}>{game.title}</Text>
-              <Text style={styles.gameDesc}>{game.desc}</Text>
+              <Text style={styles.gameDesc}>{game.description}</Text>
             </TouchableOpacity>
           ))}
         </View>
