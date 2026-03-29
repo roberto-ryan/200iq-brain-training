@@ -24,8 +24,7 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "SCHEDULE_EXACT_ALARM"
-      ],
-      "googleServicesFile": "./google-services.json"
+      ]
     },
     "web": {
       "bundler": "metro"
@@ -35,11 +34,10 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-XXXXX~YYYYY",
-          "iosAppId": "ca-app-pub-XXXXX~YYYYY"
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
-      ],
-      "expo-store-review"
+      ]
     ],
     "extra": {
       "eas": {
