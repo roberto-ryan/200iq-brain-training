@@ -20,14 +20,7 @@
       "versionCode": 1,
       "permissions": ["INTERNET", "ACCESS_NETWORK_STATE"]
     },
-    "plugins": [
-      [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY"
-        }
-      ]
-    ],
+    "plugins": [],
     "extra": {
       "eas": {
         "projectId": ""
