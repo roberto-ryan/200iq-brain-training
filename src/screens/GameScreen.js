@@ -3,6 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SIZES } from '../constants/theme';
 import { getGameById, getDailyChallenge } from '../games/registry';
+import { getDailySessionCount, incrementDailySession } from '../services/storage';
+import usePremium from '../hooks/usePremium';
+import { FREE_TIER } from '../constants/config';
 
 const GAME_DURATION = 30; // seconds per round
 
@@ -15,6 +18,20 @@ export default function GameScreen({ route, navigation }) {
   const [gameStarted, setGameStarted] = useState(false);
   const [countdown, setCountdown] = useState(3);
   const timerRef = useRef(null);
+  const { isPremium } = usePremium();
+
+  // Session limit check
+  useEffect(() => {
+    (async () => {
+      if (isPremium) return;
+      const count = await getDailySessionCount();
+      if (count >= FREE_TIER.DAILY_SESSION_LIMIT) {
+        navigation.replace('Premium');
+        return;
+      }
+      await incrementDailySession();
+    })();
+  }, []);
 
   const resolvedId = gameId === 'daily' ? getDailyChallenge().id : gameId;
   const game = getGameById(resolvedId);
