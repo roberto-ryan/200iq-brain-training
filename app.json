@@ -30,7 +30,13 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-2364988424768187~7167503214"
+        }
+      ]
     ],
     "extra": {
       "eas": {

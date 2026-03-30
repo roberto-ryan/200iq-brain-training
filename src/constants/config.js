@@ -2,16 +2,16 @@
 export const ADS = {
   BANNER_HOME: __DEV__
     ? 'ca-app-pub-3940256099942544/6300978111'
-    : 'ca-app-pub-XXXXX/YYYYY',
+    : 'ca-app-pub-2364988424768187/6964827815',
   BANNER_STATS: __DEV__
     ? 'ca-app-pub-3940256099942544/6300978111'
-    : 'ca-app-pub-XXXXX/YYYYY',
+    : 'ca-app-pub-2364988424768187/7679143688',
   INTERSTITIAL: __DEV__
     ? 'ca-app-pub-3940256099942544/1033173712'
-    : 'ca-app-pub-XXXXX/YYYYY',
+    : 'ca-app-pub-2364988424768187/5651746149',
   REWARDED: __DEV__
     ? 'ca-app-pub-3940256099942544/5224354917'
-    : 'ca-app-pub-XXXXX/YYYYY',
+    : 'ca-app-pub-2364988424768187/9483179940',
 };
 
 export const REVENUECAT = {
